@@ -31,22 +31,14 @@ public struct OSInfo: Codable, Sendable {
     /// Reads the system's description.
     public static func current() -> OSInfo {
         let v = ProcessInfo.processInfo.operatingSystemVersion
-        let thermal: String
-        switch ProcessInfo.processInfo.thermalState {
-        case .nominal: thermal = "nominal"
-        case .fair: thermal = "fair"
-        case .serious: thermal = "serious"
-        case .critical: thermal = "critical"
-        @unknown default: thermal = "unknown"
-        }
         return OSInfo(
             name: "macOS",
-            version: v.patchVersion == 0 ? "\(v.majorVersion).\(v.minorVersion)" : "\(v.majorVersion).\(v.minorVersion).\(v.patchVersion)",
+            version: Derive.versionString(v.majorVersion, v.minorVersion, v.patchVersion),
             build: Sysctl.string("kern.osversion") ?? "unknown",
             kernel: "\(Sysctl.string("kern.ostype") ?? "Darwin") \(Sysctl.string("kern.osrelease") ?? "?")",
             uptimeSeconds: ProcessInfo.processInfo.systemUptime,
             bootedAt: Sysctl.bootTime(),
-            thermalState: thermal
+            thermalState: Derive.thermalLabel(ProcessInfo.processInfo.thermalState)
         )
     }
 }

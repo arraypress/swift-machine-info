@@ -41,13 +41,7 @@ public struct MemoryStatus: Codable, Sendable {
         // `vm_kernel_page_size` is a mutable C global Swift 6 rejects; the
         // kernel publishes the same number as a sysctl.
         let page = Sysctl.integer("hw.pagesize") ?? 16_384
-        let pressure: String?
-        switch Sysctl.integer("kern.memorystatus_vm_pressure_level") {
-        case 1: pressure = "normal"
-        case 2: pressure = "warning"
-        case 4: pressure = "critical"
-        default: pressure = nil
-        }
+        let pressure = Derive.pressureLabel(Sysctl.integer("kern.memorystatus_vm_pressure_level"))
         return MemoryStatus(
             totalBytes: Sysctl.integer("hw.memsize") ?? 0,
             freeBytes: (Int64(stats.free_count) + Int64(stats.inactive_count)) * page,

@@ -54,15 +54,12 @@ public struct NetworkInfo: Codable, Sendable {
                 var host = [CChar](repeating: 0, count: Int(NI_MAXHOST))
                 guard getnameinfo(sa, socklen_t(sa.pointee.sa_len), &host, socklen_t(host.count),
                                   nil, 0, NI_NUMERICHOST) == 0 else { continue }
-                var address = String(cString: host)
-                // fe80::…%en0 is noise in a report of where the machine is.
-                if address.hasPrefix("fe80") { continue }
-                if let percent = address.firstIndex(of: "%") { address = String(address[..<percent]) }
+                guard let address = Derive.cleanAddress(String(cString: host)) else { continue }
                 addresses.append((String(cString: entry.pointee.ifa_name), address,
                                   family == UInt8(AF_INET) ? "IPv4" : "IPv6"))
             }
         }
-        let primary = addresses.first { $0.family == "IPv4" && $0.name.hasPrefix("en") }
+        let primary = Derive.primary(of: addresses)
         let interfaces = addresses.map {
             NetworkInterface(name: $0.name, address: $0.address, family: $0.family,
                              isPrimary: $0.name == primary?.name && $0.address == primary?.address)

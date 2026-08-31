@@ -87,4 +87,30 @@ final class MachineInfoTests: XCTestCase {
         let text = String(decoding: data, as: UTF8.self)
         XCTAssertTrue(text.contains("modelIdentifier"))
     }
+
+    func testDerivationRulesAlone() {
+        // The rules pinned with no hardware in sight — the point of the
+        // Support split: a sentinel or a label is testable by itself.
+        XCTAssertNil(Derive.batteryMinutes(0))
+        XCTAssertNil(Derive.batteryMinutes(-1))
+        XCTAssertEqual(Derive.batteryMinutes(90), 90)
+        XCTAssertNil(Derive.batteryMinutes("nonsense"))
+        XCTAssertEqual(Derive.healthPercent(design: 8000, max: 7333), 92)
+        XCTAssertNil(Derive.healthPercent(design: 0, max: 7333))
+        XCTAssertNil(Derive.healthPercent(design: nil, max: 7333))
+        XCTAssertEqual(Derive.pressureLabel(1), "normal")
+        XCTAssertEqual(Derive.pressureLabel(4), "critical")
+        XCTAssertNil(Derive.pressureLabel(3))
+        XCTAssertNil(Derive.pressureLabel(nil))
+        XCTAssertEqual(Derive.versionString(27, 0, 0), "27.0")
+        XCTAssertEqual(Derive.versionString(26, 1, 2), "26.1.2")
+        XCTAssertNil(Derive.cleanAddress("fe80::1%en0"))
+        XCTAssertEqual(Derive.cleanAddress("2001:db8::1%en0"), "2001:db8::1")
+        XCTAssertEqual(Derive.cleanAddress("192.168.1.10"), "192.168.1.10")
+        let picked = Derive.primary(of: [("utun3", "10.0.0.2", "IPv4"),
+                                         ("en0", "fdaa::5", "IPv6"),
+                                         ("en0", "192.168.1.7", "IPv4")])
+        XCTAssertEqual(picked?.address, "192.168.1.7")
+        XCTAssertNil(Derive.primary(of: [("lo0", "127.0.0.1", "IPv4")]))
+    }
 }

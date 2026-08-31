@@ -42,18 +42,14 @@ public struct BatteryInfo: Codable, Sendable {
             let smart = smartBattery()
             let charging = description[kIOPSIsChargingKey] as? Bool ?? false
             let external = (description[kIOPSPowerSourceStateKey] as? String) == kIOPSACPowerValue
-            let minutes: (Any?) -> Int? = { value in
-                guard let m = value as? Int, m > 0 else { return nil }  // 0 and -1 both mean "no estimate"
-                return m
-            }
             return BatteryInfo(
                 percentage: description[kIOPSCurrentCapacityKey] as? Int ?? 0,
                 isCharging: charging,
                 externalPower: external,
                 cycleCount: smart?.cycles,
                 healthPercent: smart?.health,
-                timeToEmptyMinutes: external ? nil : minutes(description[kIOPSTimeToEmptyKey]),
-                timeToFullMinutes: charging ? minutes(description[kIOPSTimeToFullChargeKey]) : nil
+                timeToEmptyMinutes: external ? nil : Derive.batteryMinutes(description[kIOPSTimeToEmptyKey]),
+                timeToFullMinutes: charging ? Derive.batteryMinutes(description[kIOPSTimeToFullChargeKey]) : nil
             )
         }
         return nil
@@ -69,11 +65,8 @@ public struct BatteryInfo: Codable, Sendable {
                 .takeRetainedValue() as? Int
         }
         let cycles = property("CycleCount")
-        var health: Int?
-        if let design = property("DesignCapacity"), design > 0,
-           let max = property("AppleRawMaxCapacity") ?? property("MaxCapacity") {
-            health = Int((Double(max) / Double(design) * 100).rounded())
-        }
+        let health = Derive.healthPercent(design: property("DesignCapacity"),
+                                          max: property("AppleRawMaxCapacity") ?? property("MaxCapacity"))
         return (cycles, health)
     }
 }
