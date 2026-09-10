@@ -32,23 +32,3 @@ public struct MachineSnapshot: Codable, Sendable {
     /// When this snapshot was taken.
     public let capturedAt: Date
 }
-
-/// The library's front door.
-public enum Machine {
-
-    /// Takes a full snapshot. Milliseconds, not seconds — nothing here
-    /// launches a process or waits on hardware.
-    @MainActor
-    public static func snapshot() -> MachineSnapshot {
-        MachineSnapshot(
-            hardware: .current(),
-            os: .current(),
-            memory: .current(),
-            disks: DiskInfo.mounted(),
-            battery: .current(),
-            displays: DisplayInfo.current(),
-            network: .current(),
-            capturedAt: Date()
-        )
-    }
-}
