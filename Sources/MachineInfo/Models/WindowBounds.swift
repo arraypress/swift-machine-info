@@ -25,4 +25,12 @@ public struct WindowBounds: Codable, Sendable, Equatable {
 
     /// Height in points.
     public let height: Double
+
+    /// A frame from its four numbers.
+    public init(x: Double, y: Double, width: Double, height: Double) {
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+    }
 }

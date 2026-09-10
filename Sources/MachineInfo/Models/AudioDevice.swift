@@ -39,4 +39,19 @@ public struct AudioDevice: Codable, Sendable, Equatable {
 
     /// The nominal sample rate in hertz, where readable.
     public let sampleRate: Double?
+
+    /// A device, for callers building one by hand — a fixture, a test.
+    public init(id: UInt32, name: String, uid: String?, transport: AudioTransport, transportCode: String,
+                isInput: Bool, isOutput: Bool, isDefaultOutput: Bool, isDefaultInput: Bool, sampleRate: Double?) {
+        self.id = id
+        self.name = name
+        self.uid = uid
+        self.transport = transport
+        self.transportCode = transportCode
+        self.isInput = isInput
+        self.isOutput = isOutput
+        self.isDefaultOutput = isDefaultOutput
+        self.isDefaultInput = isDefaultInput
+        self.sampleRate = sampleRate
+    }
 }

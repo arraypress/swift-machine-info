@@ -39,4 +39,16 @@ public struct WindowInfo: Codable, Sendable {
 
     /// Whether it is currently on screen.
     public let isOnScreen: Bool
+
+    /// A window, for callers building one by hand — a fixture, a test.
+    public init(ownerName: String, ownerPID: Int32, windowNumber: Int, title: String?, bounds: WindowBounds,
+                layer: Int, isOnScreen: Bool) {
+        self.ownerName = ownerName
+        self.ownerPID = ownerPID
+        self.windowNumber = windowNumber
+        self.title = title
+        self.bounds = bounds
+        self.layer = layer
+        self.isOnScreen = isOnScreen
+    }
 }

@@ -30,4 +30,13 @@ public struct StorageInfo: Codable, Sendable, Equatable {
 
     /// Total less free, in bytes.
     public let usedBytes: Int64
+
+    /// Storage figures, for callers building them by hand — a fixture, a test.
+    public init(path: String, totalBytes: Int64, freeBytes: Int64, availableForImportantUsageBytes: Int64?, usedBytes: Int64) {
+        self.path = path
+        self.totalBytes = totalBytes
+        self.freeBytes = freeBytes
+        self.availableForImportantUsageBytes = availableForImportantUsageBytes
+        self.usedBytes = usedBytes
+    }
 }

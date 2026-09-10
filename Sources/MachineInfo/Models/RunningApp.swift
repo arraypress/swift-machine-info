@@ -30,4 +30,16 @@ public struct RunningApp: Codable, Sendable {
 
     /// Dock app, menu-bar agent, or background process.
     public let activationPolicy: ActivationPolicy
+
+    /// A running app, for callers building one by hand — a fixture, a test.
+    public init(name: String, bundleIdentifier: String?, pid: Int32, isActive: Bool, isHidden: Bool,
+                launchedAt: Date?, activationPolicy: ActivationPolicy) {
+        self.name = name
+        self.bundleIdentifier = bundleIdentifier
+        self.pid = pid
+        self.isActive = isActive
+        self.isHidden = isHidden
+        self.launchedAt = launchedAt
+        self.activationPolicy = activationPolicy
+    }
 }
