@@ -24,9 +24,10 @@ print(snapshot.battery?.percentage ?? 100)    // 60
 - 🪟 **Windows** — the window server's list front to back, with the front document window picked out; titles only when macOS will give them
 - 📦 **Storage** — free space for one path, plain and counting what APFS could purge, with the used figure
 - 🔊 **Audio devices** — every input and output with its transport, the current default output, and a way to change it
+- 🎧 **Bluetooth and USB devices** — every paired and plugged-in device with its kind and battery: AirPods per bud and case, a keyboard, mouse or trackpad's level and whether it is charging; a keyboard charging on its cable is one device, not two
 - ☕ **Keep awake** — an IOKit power assertion held by a token, released when the token goes, so a crash cannot leave the Mac awake
 - 🔒 **No serial numbers** — nothing here can single out one machine among identical ones, deliberately
-- ⚡ **No processes launched** — everything is sysctl, IOKit and the frameworks, which is why it is milliseconds, not `system_profiler` seconds
+- ⚡ **No processes launched** — everything is sysctl, IOKit and the frameworks, which is why it is milliseconds, not `system_profiler` seconds. One exception: `ConnectedDevices` asks `system_profiler` once (~0.15 s), because AirPods' per-bud levels exist nowhere public else
 
 ## Running apps
 
@@ -66,6 +67,23 @@ try AudioDevices.setOutput(named: "AirPods")   // a prefix or substring will do 
 ```
 
 Changing the default output is a user-visible action — the sound menu flips and whatever is playing moves — so say so before doing it on someone's behalf.
+
+## Bluetooth and USB devices
+
+```swift
+for device in try ConnectedDevices.all() where device.isConnected {
+    print(device.name, device.kind ?? "", device.connections, device.battery?.lowest ?? "-")
+}
+```
+
+Measured on macOS 27.0.1 (AirPods Pro, a Magic Keyboard, mice):
+
+- **Where each fact lives.** The paired list and AirPods' left, right and case levels are in `system_profiler SPBluetoothDataType` and nowhere public else (IOBluetooth has them only as private API). A keyboard, mouse or trackpad's level is in IOKit's `AppleDeviceManagementHIDEventService` (`BatteryPercent`), not in system_profiler. USB devices are `SPUSBHostDataType`.
+- **One device per thing.** A keyboard charging on its cable keeps its Bluetooth address in IOKit, so its Bluetooth entry, its battery and its USB entry become one device with `connections: [.usb]`.
+- **Charging** is read from `BatteryStatusFlags`: 4 measured on Bluetooth running on battery, 3 on the cable charging (the level then rose). Other values give `nil`, not a guess.
+- A third-party mouse may report no level at all; an iPhone's or Apple Watch's battery is not readable from a Mac.
+- No serial numbers or Bluetooth addresses come out: they are read only to match a device's entries together.
+- One `system_profiler` run, ~0.15 s.
 
 ## Keeping the Mac awake
 

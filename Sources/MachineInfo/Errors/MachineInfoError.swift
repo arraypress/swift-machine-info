@@ -29,6 +29,9 @@ public enum MachineInfoError: Error, LocalizedError, Equatable, Sendable {
     /// The volume's capacities could not be read at the path.
     case storageUnreadable(String)
 
+    /// The Bluetooth and USB report could not be read; carries why.
+    case devicesUnreadable(String)
+
     public var errorDescription: String? {
         switch self {
         case .notRunning(let name):
@@ -43,6 +46,8 @@ public enum MachineInfoError: Error, LocalizedError, Equatable, Sendable {
             return "CoreAudio refused: OSStatus \(status)"
         case .storageUnreadable(let path):
             return "no volume capacities readable at \(path)"
+        case .devicesUnreadable(let why):
+            return "could not list Bluetooth and USB devices: \(why)"
         }
     }
 }
