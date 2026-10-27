@@ -85,6 +85,18 @@ Measured on macOS 27.0.1 (AirPods Pro, a Magic Keyboard, mice):
 - No serial numbers or Bluetooth addresses come out: they are read only to match a device's entries together.
 - One `system_profiler` run, ~0.15 s.
 
+## What the machine is doing
+
+```swift
+let now = await SystemActivity.sample(interval: 1, top: 5)
+now.cpuPercent          // 26.5 — every core's ticks together
+now.corePercents        // [59, 54, 51, …]
+now.diskReadPerSecond   // 423_000
+now.top.first?.name     // "corespotlightd", 156.6 — % of one core
+```
+
+Two readings of the kernel's running counters `interval` apart — per-core CPU ticks (`host_processor_info`), the block storage drivers' byte counts, each interface's bytes (`getifaddrs`), each readable process's CPU time and footprint (`proc_pid_rusage`) — and the rates between them (`ActivityMath`, pure); memory with the kernel's pressure level, battery, thermal state and uptime at the end. Nothing is launched. The interface counters are 32-bit and wrap at 4 GiB, so a smaller second reading is a wrap; a process that started, ended or had its pid reused between the readings has no stretch and is left out; root's processes are not visible without root. Measured on this Mac: a sample's two readings take a few milliseconds each; it caught Spotlight's indexer at 157% CPU.
+
 ## Keeping the Mac awake
 
 ```swift
